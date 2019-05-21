@@ -2,10 +2,9 @@ import React, { Component } from 'react'
 import { StyleSheet, ScrollView, KeyboardAvoidingView, Alert, TextInput, Text, View} from 'react-native'
 import { Button,} from 'native-base';
 
+import Database from '../database';
 
-import { openDatabase } from 'react-native-sqlite-storage';
-//Connction to access the pre-populated sqliteexample.db
-var db = openDatabase({ name: 'sqliteexample.db', createFromLocation : 1});
+const db = new Database()
 
 class AddUserScreen extends Component {
     
@@ -31,15 +30,9 @@ class AddUserScreen extends Component {
         if (user_name) {
             if (user_contact.length === 10) {
                 if (user_address) {
-                    db.transaction(function(tx) {
-                        tx.executeSql(
-                            'INSERT INTO table_user (user_name, user_contact, user_address) VALUES (?,?,?)',
-                            [user_name, user_contact, user_address],
-                            (tx, results) => {
-                                console.log('Results', results.rowsAffected);
-                            }
-                        );
-                    });
+                    
+                    db.ADD_INTO_DATABASE(user_name, user_contact, user_address)
+                    
                     this.props.navigation.navigate('Home')
 
                 } else {

@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import { Text, Container, Content, Card, CardItem, Button } from 'native-base';
 import { openDatabase } from 'react-native-sqlite-storage';
+import Database from '../database';
 var db = openDatabase({ name: 'sqliteexample.db', createFromLocation : 1});
 
+const database = new Database()
 class UserDetailScreen extends Component {
     static navigationOptions = {
         title: 'Contact Details',
@@ -24,28 +26,23 @@ class UserDetailScreen extends Component {
             const itemId = navigation.getParam('user_id');
          
             console.log(itemId);
-            db.transaction(tx => {
-                tx.executeSql('SELECT * FROM table_user WHERE user_id = ?', [itemId], (tx, results) => {
-                    if(results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        this.setState({
-                            contactID: row.user_id,
-                            contactName: row.user_name,
-                            contactNumber: row.user_contact,
-                            contactAddress: row.user_address,
-                        })
-                    }
-                });
+
+            database.SELECT_BY_ID(itemId).then((data) => {
+                this.setState({
+                    contactID: data.user_id,
+                    contactName: data.user_name,
+                    contactNumber: data.user_contact,
+                    contactAddress: data.user_address,
+                })
             });
         });
     }
 
     handleDeleteContact = () => {
-        db.transaction(tx => {
-            tx.executeSql('Delete FROM table_user WHERE user_id = ?', [this.state.contactID])
-            alert("Deleted....")
-            this.props.navigation.navigate('ListUser')
-        });
+        database.DELETE_FROM_DATABASE(this.state.contactID);
+
+        alert("Deleted....")
+        this.props.navigation.navigate('ListUser')
     }
 
     render() {

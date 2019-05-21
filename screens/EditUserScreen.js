@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { openDatabase } from 'react-native-sqlite-storage';
 import { Button } from 'native-base';
-import { StyleSheet, ScrollView, KeyboardAvoidingView, Alert, TextInput, Text, View} from 'react-native'
-var db = openDatabase({ name: 'sqliteexample.db', createFromLocation : 1});
-
+import { ScrollView, KeyboardAvoidingView, TextInput, Text, View} from 'react-native'
+import Database from '../database';
+const db = new Database()
 class EditUserScreen extends Component {
     static navigationOptions = {
         title: 'Contact Edit',
@@ -25,18 +24,13 @@ class EditUserScreen extends Component {
             const itemId = navigation.getParam('user_id');
          
             console.log(itemId);
-            db.transaction(tx => {
-                tx.executeSql('SELECT * FROM table_user WHERE user_id = ?', [itemId], (tx, results) => {
-                    if(results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        this.setState({
-                            contactID: row.user_id,
-                            contactName: row.user_name,
-                            contactNumber: row.user_contact,
-                            contactAddress: row.user_address,
-                        })
-                    }
-                });
+            db.SELECT_BY_ID(itemId).then((data) => {
+                this.setState({
+                    contactID: data.user_id,
+                    contactName: data.user_name,
+                    contactNumber: data.user_contact,
+                    contactAddress: data.user_address,
+                })
             });
         });
     }
@@ -46,24 +40,9 @@ class EditUserScreen extends Component {
         const { contactNumber } = this.state;
         const { contactAddress } = this.state;
         const { contactID } = this.state;
-        console.log('====================================');
-        console.log(contactName, contactNumber, contactAddress, contactID);
-        console.log('====================================');
-        db.transaction(function(tx) {
-            tx.executeSql(
-                'UPDATE table_user SET user_name = ?, user_contact = ?, user_address = ? WHERE user_id = ?', [contactName, contactNumber, contactAddress, contactID],
-                (tx, results) => {
-                    console.log('Results', results.rowsAffected);
-                    if (results.rowsAffected > 0) {
-                        alert(
-                            'Success',
-                        );    
-                    } else {
-                        alert('Update Failed');
-                    }
-                }
-            )
-        });
+
+        db.UPDATE_DATABASE(contactName, contactNumber, contactAddress, contactID);
+
         this.props.navigation.navigate('UserDetail')
     }
 

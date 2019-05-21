@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
 import { Text, View } from 'react-native'
 import { FlatList } from 'react-native';
-import {Button} from 'native-base'
 import { openDatabase } from 'react-native-sqlite-storage';
 import { ListItem } from 'react-native-elements';
-//Connction to access the pre-populated sqliteexample.db
+// import { SELECT_ALL } from '../database';
 var db = openDatabase({ name: 'sqliteexample.db', createFromLocation : 1});
+import Database from '../database'
+
+const database = new Database()
 
 class ListUserScreen extends Component {
     
@@ -30,17 +32,25 @@ class ListUserScreen extends Component {
     }
 
     getContacts() {
-        db.transaction(tx => {
-            tx.executeSql('SELECT * FROM table_user', [], (tx, results) => {
-                var temp = [];
-                for (let i = 0; i < results.rows.length; ++i) {
-                    temp.push(results.rows.item(i));
-                }
-                this.setState({
-                    FlatListItems: temp,
-                });
+
+        database.SELECT_ALL().then((data) => {
+            this.setState({
+                FlatListItems: data,
             });
         });
+            
+
+        // db.transaction(tx => {
+        //     tx.executeSql('SELECT * FROM table_user', [], (tx, results) => {
+        //         var temp = [];
+        //         for (let i = 0; i < results.rows.length; ++i) {
+        //             temp.push(results.rows.item(i));
+        //         }
+        //         this.setState({
+        //             FlatListItems: temp,
+        //         });
+        //     });
+        // });
       }
 
     ListViewItemSeparator = () => {
